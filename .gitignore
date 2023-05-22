@@ -42,6 +42,20 @@
 *.idb
 *.pdb
 
+# eclipse specific git ignore
+.metadata/
+RemoteSystemsTempFiles/
+.settings/
+Debug/
+*.launch
+*.launch
+
+# STM32 git ignore
+*.mxproject
+
+*.chm
+*.settings.xml
+
 # Kernel Module Compile Results
 *.mod*
 *.cmd
