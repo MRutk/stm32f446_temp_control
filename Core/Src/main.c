@@ -202,9 +202,7 @@ void Display_ki(float k)
 
 void Increase_value()
 {
-	if(selection > 2){
-		selection = 0;
-	}
+
 	if(selection == 2){
 		ki++;
 		Display_ki(ki);
@@ -251,13 +249,11 @@ void Change_selection()
 		}
 		else{
 			Display_target(Target);
-
 		}
-
 }
 //functions used in interupts to manipulate target,ki,kp values end here
 
-// Code for communicating and setting up temperature sensor taken from https://controllerstech.com/ds18b20-and-stm32/
+// Code for communicating and setting up temperature sensor borrowed from https://controllerstech.com/ds18b20-and-stm32/
 
 void delay(uint16_t us)		//delay in us, seems to be acurate but setting delay as in specification does not give proper results
 {
@@ -691,7 +687,7 @@ void StartDefaultTask(void const * argument)
 {
   /* USER CODE BEGIN 5 */
 	//int counter = 0;
-	osDelay(1000); //added to avoid conflict with initialization, before adding first pulled temperature values was 85c
+	osDelay(1000); //added to avoid conflict with initialization
   /* Infinite loop */
   for(;;)
   {
@@ -763,45 +759,25 @@ void StartTask02(void const * argument)
 	  }
 	  i++;
 
-	  if(BlueLEDFlag){
-	  	  		HAL_GPIO_WritePin(GPIOB, IN2_Pin, GPIO_PIN_RESET);
-	  	  		BlueLEDFlag = false;
-	  	  	}
-	  	  	else{
-	  	  		HAL_GPIO_WritePin(GPIOB, IN2_Pin, GPIO_PIN_SET);
-	  	  		BlueLEDFlag = true;
-	  	  	}
-
 	  SSD1306_Clear();
 	  osDelay(10);
 
-	  //print temperature on screen
+	  //testing new way
 	  SSD1306_GotoXY (10,10); 						// goto 10, 10
 	  SSD1306_Fill(SSD1306_COLOR_BLACK);
 	  sprintf (str2, "Temp: %.2f", Temperature);
 	  SSD1306_Puts (str2, &Font_11x18, 1); 			// print temperature
-	  SSD1306_UpdateScreen();
 
-	  //print counter on screen TODO might change counter to a visual kind with 4 steps (-,--,---,----)
+ 	  //print counter on screen TODO might change counter to a visual kind with 4 steps (-,--,---,----)
 	  SSD1306_GotoXY (80,40);
 	  sprintf (str3, "%u", i);
 	  SSD1306_Puts (str3, &Font_11x18, 1);	//print additional info
-	  SSD1306_UpdateScreen(); 				// update screen
 
 	  //print heating status
 	  SSD1306_GotoXY (10,40);
 	  SSD1306_Puts (HeatStatus, &Font_11x18, 1);	//print on/off/err
+	  
 	  SSD1306_UpdateScreen();
-
-	  //helper code for checking proper operation (timing) of task with led and logic analyzer
-	  if(BlueLEDFlag){
-	  		HAL_GPIO_WritePin(GPIOB, IN2_Pin, GPIO_PIN_RESET);
-	  		BlueLEDFlag = false;
-	  	}
-	  	else{
-	  		HAL_GPIO_WritePin(GPIOB, IN2_Pin, GPIO_PIN_SET);
-	  		BlueLEDFlag = true;
-	  	}
 
 	  osDelay(2000); 	//wait for 2 seconds
 
@@ -823,10 +799,6 @@ void StartTask03(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-
-	  //code for checking custom delay in us
-	  	  			  HAL_GPIO_WritePin(GPIOC, TimerCheck_Pin, GPIO_PIN_SET);
-	  	  			  delay(1000);
 	  // PI controller task
 
 	  if(ManualFlag){
@@ -874,13 +846,7 @@ void StartTask03(void const * argument)
 	  				  Heat_stop();
 	  			  }
 
-	  			  //code for checking custom delay in us
-	  			  //HAL_GPIO_WritePin(GPIOC, TimerCheck_Pin, GPIO_PIN_SET);
-	  			  //delay(1000);
-	  			  //HAL_GPIO_WritePin(GPIOC, TimerCheck_Pin, GPIO_PIN_RESET);
-	  			  //delay(1000);
-
-	  			  // work ends
+	  			  // work ends giving back mutex
 	  			  xSemaphoreGive(HeatMutex01Handle);
 	  		  }
 	  	  }
@@ -888,7 +854,6 @@ void StartTask03(void const * argument)
 	  		  //could not obtain semaphore dont know what exactly to put here
 	  	  }
 
-	  HAL_GPIO_WritePin(GPIOC, TimerCheck_Pin, GPIO_PIN_RESET);
 	  osDelay(10000);  //wait 10 seconds
 
   }
